@@ -18,7 +18,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 # 🆔 ID Setup
-OWNER_ID = 123456789012345678  # 👈 Tomar ID ekhane paste koro (Hardcoded)
+OWNER_ID = 1408861331834273832  # 👈 Tomar ID ekhane paste koro (Hardcoded)
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 0)) # 👈 Railway variable theke ashbe
 
 # Chat Feature Flag
