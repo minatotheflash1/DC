@@ -23,7 +23,7 @@ ADMIN_ID = int(os.environ.get("ADMIN_ID", 0))
 
 PAID_ROLE_ID = 1503661161089073243  # 👈 Paid Role ID
 PAID_CHANNEL_LINK = "https://discord.com/channels/1498333809907601480/1503655238446612540"  # 👈 Paid Channel Link
-MAIN_SERVER_LINK = "https://discord.gg/your_main_server_invite" # 👈 তোমার মেইন সার্ভারের ইনভাইট লিংক এখানে দাও
+MAIN_SERVER_LINK = "https://discord.gg/D9QV3MS64" # 👈 তোমার মেইন সার্ভারের ইনভাইট লিংক এখানে দাও
 
 bot.chat_enabled = True
 afk_users = {}
