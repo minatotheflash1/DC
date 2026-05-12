@@ -1,20 +1,23 @@
+import os
+import secrets
+import requests
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import psycopg2
 import psycopg2.extras
-import secrets
-import os
 
-# HTML ফাইলগুলো মেইন ফোল্ডারেই আছে, তাই template_folder="." দেওয়া হলো
+
 app = Flask(__name__, template_folder=".")
 CORS(app)
 
+# Environment Variables
 DB_URL = os.environ.get("DATABASE_URL")
+WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL") # রেলওয়েতে এই ভ্যারিয়েবলটি অ্যাড করবেন
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-# ================= FRONTEND ROUTES (এই অংশটুকু আপনার কোডে ছিল না) =================
+# ================= FRONTEND ROUTES =================
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -40,6 +43,29 @@ def submit_form():
             data['discord'], data['method'], data['sender_number'], data['trx'], final_amount, user_token
         ))
         conn.commit()
+
+        # 🆕 ডিসকর্ডে অটোমেটিক লগ পাঠানো
+        if WEBHOOK_URL:
+            payload = {
+                "embeds": [{
+                    "title": "💰 New Payment Received!",
+                    "color": 0x00FFCC,
+                    "fields": [
+                        {"name": "Student", "value": data['name'], "inline": True},
+                        {"name": "Discord", "value": data['discord'], "inline": True},
+                        {"name": "Method", "value": data['method'], "inline": True},
+                        {"name": "TrxID", "value": data['trx'], "inline": True},
+                        {"name": "Amount", "value": f"{final_amount} BDT", "inline": True}
+                    ],
+                    "footer": {"text": "Website Enrollment System"}
+                }]
+            }
+            # try-except ব্লক ব্যবহার করা হয়েছে যেন ওয়েবহুকে সমস্যা হলেও ইউজারের ফর্ম সাবমিট ফেইল না করে
+            try:
+                requests.post(WEBHOOK_URL, json=payload)
+            except Exception as req_err:
+                print(f"Discord Webhook Error: {req_err}")
+
         return jsonify({"success": True, "token": user_token})
     except Exception as e:
         conn.rollback()
