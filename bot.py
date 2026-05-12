@@ -151,6 +151,80 @@ async def serverinfo(ctx):
     await ctx.send(embed=embed)
 
 # ==========================================
+# 🛠️ ADVANCED MODERATION & AUTO-INVITE
+# ==========================================
+
+@bot.command()
+@commands.check(is_admin)
+async def add(ctx, member: discord.Member):
+    """!add @user দিলে তাকে ১ বার ব্যবহারযোগ্য ইনভাইট লিংক ডিএম করবে"""
+    
+    # ১. তোমার প্রাইভেট চ্যানেলের আইডি এখানে হার্ডকোড করো (ID কপি করে বসাও)
+    PRIVATE_CHANNEL_ID = 123456789012345678  # 👈 তোমার চ্যানেল আইডি এখানে দাও
+    
+    # ২. ওই স্পেসিফিক চ্যানেলের জন্য ১ বার ব্যবহারযোগ্য লিংক জেনারেট করা
+    channel = bot.get_channel(PRIVATE_CHANNEL_ID)
+    
+    if channel is None:
+        return await ctx.send("❌ হার্ডকোড করা চ্যানেল আইডিটি পাওয়া যায়নি! আইডি ঠিক করো।")
+
+    try:
+        # ১ বার ব্যবহারযোগ্য এবং ২৪ ঘণ্টা মেয়াদের ইনভাইট লিংক
+        invite = await channel.create_invite(max_uses=1, unique=True, reason=f"Added by {ctx.author.name}")
+        
+        # ৩. ইউজারের ডিএম-এ ইনভাইট লিংক পাঠানো
+        embed = discord.Embed(
+            title="🚀 Exclusive Access Granted!",
+            description=f"Hey {member.name}, তোমাকে আমাদের প্রাইভেট সেকশনে অ্যাক্সেস দেওয়া হয়েছে।",
+            color=discord.Color.gold()
+        )
+        embed.add_field(name="Invite Link", value=f"{invite.url}", inline=False)
+        embed.add_field(name="Note", value="এই লিংকটি মাত্র ১ বার ব্যবহার করা যাবে। দ্রুত জয়েন করো!", inline=False)
+        embed.set_footer(text=f"Sent from {ctx.guild.name}")
+
+        await member.send(embed=embed)
+        await ctx.send(f"✅ {member.mention}-এর জন্য ১-টাইম ইনভাইট জেনারেট করে ডিএম করা হয়েছে!")
+        
+    except discord.Forbidden:
+        await ctx.send(f"❌ {member.mention}-কে ডিএম করা যাচ্ছে না (Privacy Settings অন থাকতে হবে)।")
+    except Exception as e:
+        await ctx.send(f"❌ একটি এরর হয়েছে: {e}")
+
+@bot.command()
+@commands.check(is_admin)
+async def ban(ctx, member: discord.Member, *, reason="No reason provided"):
+    """!ban @user দিলে মেম্বারকে পার্মানেন্ট ব্যান করবে"""
+    try:
+        # ব্যানের আগে ইউজারকে ডিএম করে জানানো (অপশনাল)
+        try:
+            await member.send(f"🔨 You have been banned from **{ctx.guild.name}**.\n**Reason:** {reason}")
+        except:
+            pass # ডিএম না গেলে সমস্যা নেই
+            
+        await member.ban(reason=reason)
+        
+        embed = discord.Embed(
+            title="🔨 Member Banned",
+            description=f"**Target:** {member.mention}\n**Reason:** {reason}\n**Admin:** {ctx.author.mention}",
+            color=discord.Color.dark_red(),
+            timestamp=datetime.datetime.utcnow()
+        )
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(f"❌ ব্যান করা সম্ভব হয়নি। চেক করো আমার রোল মেম্বারের রোলের উপরে কি না।")
+
+@bot.command()
+@commands.check(is_admin)
+async def unban(ctx, *, member_id: int):
+    """!unban <ID> দিলে ব্যান রিমুভ হবে"""
+    try:
+        user = await bot.fetch_user(member_id)
+        await ctx.guild.unban(user)
+        await ctx.send(f"✅ User ID: `{member_id}` ({user.name}) এর ব্যান রিমুভ করা হয়েছে।")
+    except:
+        await ctx.send("❌ এই আইডিটি ব্যান লিস্টে পাওয়া যায়নি।")
+
+# ==========================================
 # 💎 PREMIUM / MOD COMMANDS
 # ==========================================
 @bot.command()
