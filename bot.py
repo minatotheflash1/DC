@@ -5,7 +5,6 @@ import asyncpg
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 import datetime
-import asyncio
 
 load_dotenv()
 
@@ -16,7 +15,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None) # Custom help command added
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 OWNER_ID = 1408861331834273832
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 0)) 
@@ -104,7 +103,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
 # ==========================================
-# 💎 PREMIUM ACCESS COMMAND (!add)
+# 💎 PREMIUM ACCESS & INVITE COMMANDS
 # ==========================================
 @bot.command()
 @commands.check(is_admin)
@@ -141,43 +140,56 @@ async def add(ctx, member: discord.Member):
     except discord.Forbidden:
         await ctx.send("❌ আমার কাছে মেম্বারকে রোল দেওয়ার পারমিশন নেই!")
 
+@bot.command()
+@commands.check(is_admin)
+async def create_access(ctx):
+    """১ বার ব্যবহারযোগ্য ইনভাইট লিংক তৈরি করবে (Admin only)"""
+    invite = await ctx.channel.create_invite(max_uses=1, unique=True, reason=f"Access created by {ctx.author.name}")
+    
+    try:
+        async with bot.db.acquire() as conn:
+            await conn.execute('INSERT INTO server_invites (code, uses) VALUES ($1, $2) ON CONFLICT (code) DO UPDATE SET uses = $2', invite.code, invite.uses)
+    except Exception as e:
+        print(f"Database Error: {e}")
+        
+    embed = discord.Embed(
+        title="🔗 Client Access Link Created",
+        description=f"**1-Use Limit Link:**\n{invite.url}",
+        color=NEON_PURPLE
+    )
+    embed.set_footer(text=f"Generated for {ctx.channel.name}")
+    await ctx.send(embed=embed)
+
 # ==========================================
-# 🛡️ NEW & RESTORED ADMIN COMMANDS
+# 🛡️ ADMIN & MODERATION COMMANDS
 # ==========================================
 @bot.command()
 @commands.check(is_admin)
 async def lock(ctx):
-    """চ্যানেল লক করার জন্য"""
     await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=False)
     await ctx.send(embed=discord.Embed(title="🔒 Channel Locked", description="এই চ্যানেলে এখন শুধু এডমিনরা মেসেজ দিতে পারবে।", color=ERROR_RED))
 
 @bot.command()
 @commands.check(is_admin)
 async def unlock(ctx):
-    """চ্যানেল আনলক করার জন্য"""
     await ctx.channel.set_permissions(ctx.guild.default_role, send_messages=True)
     await ctx.send(embed=discord.Embed(title="🔓 Channel Unlocked", description="চ্যানেলটি সবার জন্য উন্মুক্ত করা হয়েছে।", color=NEON_CYAN))
 
 @bot.command()
 @commands.check(is_admin)
 async def slowmode(ctx, seconds: int):
-    """চ্যানেলে স্লো-মোড সেট করার জন্য (!slowmode 5)"""
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.send(f"⏳ Slowmode set to **{seconds} seconds**.")
 
 @bot.command()
 @commands.check(is_admin)
 async def poll(ctx, *, question):
-    """ভোট বা পোল ক্রিয়েট করার জন্য"""
     embed = discord.Embed(title="📊 Server Poll", description=question, color=NEON_PURPLE)
     embed.set_footer(text=f"Poll created by {ctx.author.name}")
     msg = await ctx.send(embed=embed)
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")
 
-# ==========================================
-# 🛠️ MODERATION
-# ==========================================
 @bot.command(aliases=['purge'])
 @commands.check(is_admin)
 async def clear(ctx, amount: int = 5):
@@ -197,22 +209,11 @@ async def ban(ctx, member: discord.Member, *, reason="No reason"):
     await member.ban(reason=reason)
     await ctx.send(embed=discord.Embed(title="🔨 Banned", description=f"{member.mention} has been banned.", color=ERROR_RED))
 
-@bot.command()
-async def snipe(ctx):
-    if ctx.channel.id in sniped_messages:
-        msg = sniped_messages[ctx.channel.id]
-        embed = discord.Embed(description=msg["content"], color=ERROR_RED, timestamp=msg["time"])
-        embed.set_author(name=msg["author"], icon_url=msg["author"].display_avatar.url)
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send("❌ No recently deleted messages to snipe!")
-
 # ==========================================
 # 📌 UTILITIES & USER COMMANDS
 # ==========================================
 @bot.command()
 async def ticket(ctx):
-    """কাস্টমার সাপোর্টের জন্য প্রাইভেট থ্রেড তৈরি করবে"""
     thread = await ctx.channel.create_thread(name=f"ticket-{ctx.author.name}", type=discord.ChannelType.private_thread)
     await thread.add_user(ctx.author)
     embed = discord.Embed(title="🎟️ Support Ticket", description=f"Hello {ctx.author.mention}, এডমিনরা খুব শিগগিরই এখানে রিপ্লাই দেবে। তোমার সমস্যাটি বিস্তারিত লিখে রাখো।", color=NEON_CYAN)
@@ -251,6 +252,16 @@ async def serverinfo(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
+async def snipe(ctx):
+    if ctx.channel.id in sniped_messages:
+        msg = sniped_messages[ctx.channel.id]
+        embed = discord.Embed(description=msg["content"], color=ERROR_RED, timestamp=msg["time"])
+        embed.set_author(name=msg["author"], icon_url=msg["author"].display_avatar.url)
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send("❌ No recently deleted messages to snipe!")
+
+@bot.command()
 async def afk(ctx, *, reason="Away"):
     afk_users[ctx.author.id] = reason
     await ctx.send(f"✅ {ctx.author.mention} is AFK: {reason}")
@@ -260,10 +271,9 @@ async def afk(ctx, *, reason="Away"):
 # ==========================================
 @bot.command()
 async def help(ctx):
-    """Custom Stylish Help Menu"""
     embed = discord.Embed(title="🤖 Bot Command Menu", description="Here are all the available commands:", color=NEON_CYAN)
     
-    embed.add_field(name="👑 Admin Commands", value="`!add @user` - Give paid access\n`!lock` / `!unlock` - Manage channels\n`!slowmode <sec>` - Set slowmode\n`!clear <num>` - Delete messages\n`!timeout @user <min>` - Mute user\n`!ban @user` - Ban user\n`!poll <question>` - Start poll", inline=False)
+    embed.add_field(name="👑 Admin Commands", value="`!add @user` - Give paid access\n`!create_access` - Generate 1-use invite\n`!lock` / `!unlock` - Manage channels\n`!slowmode <sec>` - Set slowmode\n`!clear <num>` - Delete messages\n`!timeout @user <min>` - Mute user\n`!ban @user` - Ban user\n`!poll <question>` - Start poll", inline=False)
     
     embed.add_field(name="📌 Utility Commands", value="`!ticket` - Open support ticket\n`!serverinfo` - Server stats\n`!info [@user]` - User info\n`!avatar [@user]` - Profile picture\n`!ping` - Bot latency\n`!snipe` - See deleted message\n`!afk <reason>` - Set AFK status", inline=False)
     
@@ -271,6 +281,18 @@ async def help(ctx):
     
     embed.set_footer(text=f"Developed by Ononto Hasan")
     await ctx.send(embed=embed)
+
+@bot.command()
+@commands.check(is_admin)
+async def chatoff(ctx):
+    bot.chat_enabled = False
+    await ctx.send("🔇 AI Chat disabled.")
+
+@bot.command()
+@commands.check(is_admin)
+async def chaton(ctx):
+    bot.chat_enabled = True
+    await ctx.send("🔊 AI Chat enabled.")
 
 @bot.event
 async def on_command_error(ctx, error):
