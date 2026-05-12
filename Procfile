@@ -1,1 +1,1 @@
-web: gunicorn app:app -b 0.0.0.0:$PORT & python bot.py
+web: bash start.sh
