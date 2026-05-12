@@ -7,7 +7,7 @@ import os
 import secrets
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".")
 CORS(app)
 
 # তোমার ডাটাবেস লিংক
