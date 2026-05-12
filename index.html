@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Enrollment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #ffffff;
+            --box-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary: #8A2BE2;
+            --secondary: #00FFCC;
+            --input-bg: rgba(0,0,0,0.5);
+            --glow-tint: rgba(0, 255, 204, 0.05);
+        }
+
+        /* 🎨 DYNAMIC PAYMENT THEMES (DARK MODE) */
+        body.theme-bkash {
+            --primary: #e2136e;
+            --secondary: #ff4d94;
+            --bg-color: #1a050d; /* Dark Magenta Tint */
+            --glow-tint: rgba(226, 19, 110, 0.08);
+        }
+        body.theme-nagad {
+            --primary: #f37021;
+            --secondary: #ff9b44;
+            --bg-color: #1a0b00; /* Dark Orange Tint */
+            --glow-tint: rgba(243, 112, 33, 0.08);
+        }
+        body.theme-rocket {
+            --primary: #8c1596;
+            --secondary: #c344ce;
+            --bg-color: #100212; /* Dark Purple Tint */
+            --glow-tint: rgba(140, 21, 150, 0.08);
+        }
+
+        /* ☀️ LIGHT MODE THEMES */
+        body.light-mode {
+            --bg-color: #f4f7f6;
+            --text-color: #111;
+            --box-bg: #ffffff;
+            --border-color: #ddd;
+            --input-bg: #f9f9f9;
+            --glow-tint: rgba(0, 0, 0, 0.02);
+        }
+        body.light-mode.theme-bkash { --bg-color: #fff0f5; --glow-tint: rgba(226, 19, 110, 0.1); }
+        body.light-mode.theme-nagad { --bg-color: #fff5eb; --glow-tint: rgba(243, 112, 33, 0.1); }
+        body.light-mode.theme-rocket { --bg-color: #fdf0ff; --glow-tint: rgba(140, 21, 150, 0.1); }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; 
+            transition: background-color 0.6s ease; 
+            overflow-x: hidden; 
+            padding: 15px; /* Mobile safety padding */
+        }
+        
+        /* Theme Icon */
+        .theme-toggle { position: absolute; top: 20px; right: 20px; cursor: pointer; background: var(--box-bg); border: 1px solid var(--border-color); color: var(--text-color); width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 100;}
+        .theme-toggle:hover { transform: scale(1.1); box-shadow: 0 4px 15px var(--secondary); }
+        
+        .container { 
+            background: var(--box-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color); 
+            border-radius: 20px; padding: 40px; width: 100%; max-width: 480px; 
+            box-shadow: 0 10px 40px var(--glow-tint); transition: all 0.6s ease; 
+            position: relative; overflow: hidden; 
+        }
+        
+        h2 { text-align: center; margin-bottom: 25px; color: var(--secondary); font-weight: 600; transition: color 0.5s ease; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.8; font-weight: 300; }
+        
+        .input-group { display: flex; gap: 10px; }
+        select { flex: 0 0 110px; cursor: pointer; }
+        .input-group input { flex: 1; }
+        
+        select, input { 
+            width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); 
+            background: var(--input-bg); color: var(--text-color); outline: none; transition: 0.3s; font-size: 14px; 
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--glow-tint); }
+        
+        button { 
+            width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 10px; 
+            background: linear-gradient(45deg, var(--primary), var(--secondary)); 
+            color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.5s ease; 
+            box-shadow: 0 4px 15px var(--glow-tint); 
+        }
+        button:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        
+        /* Smooth Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .section { display: none; opacity: 0; }
+        .section.active { display: block; animation: fadeInUp 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+        
+        /* Payment Tabs */
+        .pay-tabs { display: flex; justify-content: space-between; margin-bottom: 20px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 5px; border: 1px solid var(--border-color); }
+        .pay-tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px; color: #888; transition: all 0.4s ease; }
+        .pay-tab.active { background: var(--secondary); color: #000; box-shadow: 0 2px 10px var(--glow-tint); }
+        
+        /* Brand Logos in Tabs (Optional visual touch) */
+        .tab-bkash.active { background: #e2136e; color: white; }
+        .tab-nagad.active { background: #f37021; color: white; }
+        .tab-rocket.active { background: #8c1596; color: white; }
+        
+        .pay-details { text-align: center; background: var(--glow-tint); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed var(--secondary); transition: all 0.5s ease; }
+        .copy-btn { background: var(--box-bg); border: 1px solid var(--border-color); padding: 6px 15px; font-size: 13px; border-radius: 20px; cursor: pointer; color: var(--text-color); width: auto; margin-left: 10px; transition: 0.3s; }
+        .copy-btn:hover { background: var(--secondary); color: #000; }
+        
+        .coupon-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .coupon-box input { flex: 2; border-style: dashed; }
+        .coupon-box button { flex: 1; margin-top: 0; font-size: 14px; }
+        .price-tag { font-size: 28px; font-weight: bold; color: var(--secondary); text-align: center; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; transition: color 0.5s ease; }
+        .old-price { font-size: 16px; color: #888; text-decoration: line-through; }
+
+        /* 📱 MOBILE RESPONSIVENESS */
+        @media (max-width: 480px) {
+            .container { padding: 30px 20px; border-radius: 15px; }
+            h2 { font-size: 22px; }
+            .pay-tab { padding: 10px 5px; font-size: 13px; }
+            .price-tag { font-size: 24px; }
+            .coupon-box { flex-direction: column; }
+            .coupon-box button { padding: 12px; }
+            select { flex: 0 0 90px; padding: 14px 5px; font-size: 12px; }
+            input { font-size: 14px; }
+            #pay-number { font-size: 20px !important; display: block; margin-top: 10px; }
+            .copy-btn { margin-top: 10px; margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Theme Icon Toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()" id="theme-icon">🌙</div>
+
+    <div class="container" id="main-box">
+        
+        <!-- STEP 1: Registration Details -->
+        <div id="step-1" class="section active">
+            <h2>✨ Student Registration</h2>
+            <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="John Doe" required></div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <div class="input-group">
+                    <select id="phone_code">
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                    </select>
+                    <input type="number" id="phone" placeholder="017XXXXXXXX" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>WhatsApp Number</label>
+                <div class="input-group">
+                    <select id="wa_code">
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+91">🇮🇳 +91</option>
+                    </select>
+                    <input type="number" id="whatsapp" placeholder="017XXXXXXXX" required>
+                </div>
+            </div>
+            <div class="form-group"><label>Discord Username</label><input type="text" id="discord" placeholder="username#1234" required></div>
+            <button onclick="showSection('step-2')">Next: Payment <span style="font-size:18px;">➡️</span></button>
+            <p style="text-align:center; font-size:12px; margin-top:20px; cursor:pointer; color: #888;" onclick="showSection('admin-login')">Admin Access</p>
+        </div>
+
+        <!-- STEP 2: Secure Payment & Theming -->
+        <div id="step-2" class="section">
+            <h2>💳 Secure Checkout</h2>
+            
+            <div class="price-tag" id="price-display">
+                ৳ <span id="current-price">1000</span> BDT
+            </div>
+            
+            <div class="pay-tabs">
+                <!-- Added specific classes for coloring -->
+                <div class="pay-tab tab-bkash active" onclick="setMethod('bKash')">bKash</div>
+                <div class="pay-tab tab-nagad" onclick="setMethod('Nagad')">Nagad</div>
+                <div class="pay-tab tab-rocket" onclick="setMethod('Rocket')">Rocket</div>
+            </div>
+            
+            <div class="pay-details" id="pay-instructions">
+                <span id="method-text">bKash Send Money (Personal)</span><br>
+                <strong style="font-size: 24px; letter-spacing: 1px; display: inline-block; margin-top: 5px;" id="pay-number">01846849460</strong>
+                <button class="copy-btn" onclick="copyNumber()">📋 Copy</button>
+            </div>
+
+            <!-- Coupon Box -->
+            <div class="coupon-box">
+                <input type="text" id="coupon-code" placeholder="Have a promo code?">
+                <button onclick="applyCoupon()" id="coupon-btn">Apply</button>
+            </div>
+
+            <input type="hidden" id="selected-method" value="bKash">
+            <input type="hidden" id="final-amount" value="1000">
+
+            <div class="form-group"><label>Sender Number</label><input type="number" id="sender_number" placeholder="Number you sent money from" required></div>
+            <div class="form-group"><label>TrxID</label><input type="text" id="trx" placeholder="Transaction ID" required></div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <button style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color); flex: 1;" onclick="backToStep1()">⬅️ Back</button>
+                <button style="flex: 2;" onclick="submitData()">Confirm Payment ✅</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Success -->
+        <div id="step-3" class="section">
+            <h2>🎉 Success!</h2>
+            <p style="text-align:center; color: #aaa;">Your registration is submitted for review.</p>
+            <div style="background: var(--glow-tint); padding: 25px; text-align: center; border-radius: 15px; margin-top: 20px; border: 1px dashed var(--secondary);">
+                <p style="margin-bottom: 10px; font-size: 14px;">Your Security Token</p>
+                <h2 id="generated-token" style="color:var(--secondary); letter-spacing: 3px; margin: 0;"></h2>
+            </div>
+            <button onclick="location.reload()" style="margin-top: 30px;">Return Home</button>
+        </div>
+
+        <!-- ADMIN LOGIN -->
+        <div id="admin-login" class="section">
+            <h2>🔒 Admin Area</h2>
+            <div class="form-group"><input type="email" id="admin-email" placeholder="Email"></div>
+            <div class="form-group"><input type="password" id="admin-pass" placeholder="Password"></div>
+            <button onclick="adminLogin()">Login to Dashboard</button>
+            <p style="text-align:center; font-size:12px; margin-top:20px; cursor:pointer;" onclick="showSection('step-1')">⬅️ Cancel</p>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:5000/api";
+        let basePrice = 1000;
+        let couponApplied = false;
+
+        // Initialize default theme (bKash) on page load just in case
+        window.onload = () => { document.body.classList.add('theme-bkash'); }
+
+        function toggleTheme() { 
+            document.body.classList.toggle('light-mode'); 
+            const icon = document.getElementById('theme-icon');
+            icon.innerText = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        }
+        
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function backToStep1() {
+            showSection('step-1');
+            // Remove payment themes to return to default cyberpunk theme
+            document.body.className = document.body.classList.contains('light-mode') ? 'light-mode' : '';
+        }
+
+        // 🎨 DYNAMIC THEME & METHOD SELECTOR
+        function setMethod(method) {
+            // Update Active Tab
+            document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('selected-method').value = method;
+            
+            // Dynamic Theme Switching based on Method
+            let bodyClasses = document.body.classList;
+            bodyClasses.remove('theme-bkash', 'theme-nagad', 'theme-rocket');
+            
+            let num = '';
+            if(method === 'bKash') {
+                bodyClasses.add('theme-bkash');
+                num = '01846849460';
+            } else if(method === 'Nagad') {
+                bodyClasses.add('theme-nagad');
+                num = '01846849460';
+            } else if(method === 'Rocket') {
+                bodyClasses.add('theme-rocket');
+                num = '018468494606';
+            }
+
+            // Update Instructions
+            document.getElementById('method-text').innerText = `${method} Send Money (Personal)`;
+            document.getElementById('pay-number').innerText = num;
+        }
+
+        function copyNumber() {
+            const num = document.getElementById('pay-number').innerText;
+            navigator.clipboard.writeText(num);
+            
+            // Visual feedback on copy button
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "✅ Copied!";
+            btn.style.background = "var(--secondary)";
+            btn.style.color = "#000";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--box-bg)";
+                btn.style.color = "var(--text-color)";
+            }, 2000);
+        }
+
+        async function applyCoupon() {
+            if(couponApplied) return alert("Coupon already applied!");
+            const code = document.getElementById('coupon-code').value.trim();
+            if(!code) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/apply_coupon`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code: code})
+                });
+                const result = await res.json();
+
+                if(result.success) {
+                    let discountPercent = result.discount;
+                    let newPrice = basePrice - (basePrice * (discountPercent / 100));
+                    
+                    document.getElementById('price-display').innerHTML = `<span class="old-price">৳1000</span> ৳<span id="current-price">${newPrice}</span> BDT`;
+                    document.getElementById('final-amount').value = newPrice;
+                    
+                    const btn = document.getElementById('coupon-btn');
+                    btn.innerText = `Applied (-${discountPercent}%) ✅`;
+                    btn.style.background = "#2ecc71";
+                    couponApplied = true;
+                } else {
+                    alert("Invalid or expired coupon!");
+                }
+            } catch (e) { alert("Server error!"); }
+        }
+
+        async function submitData() {
+            // Basic validation
+            if(!document.getElementById('sender_number').value || !document.getElementById('trx').value) {
+                alert("Please enter Sender Number and TrxID!"); return;
+            }
+
+            const data = {
+                name: document.getElementById('name').value, phone_code: document.getElementById('phone_code').value,
+                phone: document.getElementById('phone').value, wa_code: document.getElementById('wa_code').value,
+                whatsapp: document.getElementById('whatsapp').value, discord: document.getElementById('discord').value,
+                method: document.getElementById('selected-method').value, sender_number: document.getElementById('sender_number').value,
+                trx: document.getElementById('trx').value, amount: document.getElementById('final-amount').value
+            };
+
+            const res = await fetch(`${API_BASE}/submit`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+            const result = await res.json();
+            if(result.success) { 
+                document.getElementById('generated-token').innerText = result.token; 
+                showSection('step-3'); 
+            } else {
+                alert("Error submitting form.");
+            }
+        }
+
+        async function adminLogin() {
+            const res = await fetch(`${API_BASE}/admin/login`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email: document.getElementById('admin-email').value, password: document.getElementById('admin-pass').value}) });
+            const result = await res.json();
+            if(result.success) { alert("Admin Dashboard Connected in previous code logic."); } else { alert("Invalid Credentials"); }
+        }
+    </script>
+</body>
+</html>
