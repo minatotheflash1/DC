@@ -137,12 +137,10 @@
 </head>
 <body>
 
-    <!-- Theme Icon Toggle -->
     <div class="theme-toggle" onclick="toggleTheme()" id="theme-icon">🌙</div>
 
     <div class="container" id="main-box">
         
-        <!-- STEP 1: Registration Details -->
         <div id="step-1" class="section active">
             <h2>✨ Student Registration</h2>
             <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="John Doe" required></div>
@@ -172,7 +170,6 @@
             <button onclick="showSection('step-2')">Next: Payment <span style="font-size:18px;">➡️</span></button>
         </div>
 
-        <!-- STEP 2: Secure Payment & Theming -->
         <div id="step-2" class="section">
             <h2>💳 Secure Checkout</h2>
             
@@ -181,7 +178,6 @@
             </div>
             
             <div class="pay-tabs">
-                <!-- Added specific classes for coloring -->
                 <div class="pay-tab tab-bkash active" onclick="setMethod('bKash')">bKash</div>
                 <div class="pay-tab tab-nagad" onclick="setMethod('Nagad')">Nagad</div>
                 <div class="pay-tab tab-rocket" onclick="setMethod('Rocket')">Rocket</div>
@@ -193,7 +189,6 @@
                 <button class="copy-btn" onclick="copyNumber()">📋 Copy</button>
             </div>
 
-            <!-- Coupon Box -->
             <div class="coupon-box">
                 <input type="text" id="coupon-code" placeholder="Have a promo code?">
                 <button onclick="applyCoupon()" id="coupon-btn">Apply</button>
@@ -211,16 +206,28 @@
             </div>
         </div>
 
-        <!-- STEP 3: Success -->
         <div id="step-3" class="section">
             <h2>🎉 Success!</h2>
             <p style="text-align:center; color: #aaa;">Your registration is submitted for review.</p>
+            
             <div style="background: var(--glow-tint); padding: 25px; text-align: center; border-radius: 15px; margin-top: 20px; border: 1px dashed var(--secondary);">
                 <p style="margin-bottom: 10px; font-size: 14px;">Your Security Token</p>
                 <h2 id="generated-token" style="color:var(--secondary); letter-spacing: 3px; margin: 0;"></h2>
             </div>
-            <button onclick="location.reload()" style="margin-top: 30px;">Return Home</button>
+
+            <div style="margin-top: 25px; padding: 20px; background: rgba(88, 101, 242, 0.1); border: 1px solid #5865F2; border-radius: 15px; text-align: center;">
+                <h3 style="color: #5865F2; font-size: 16px; margin-bottom: 10px;">🛑 Action Required!</h3>
+                <p style="color: var(--text-color); font-size: 14px; margin-bottom: 15px; opacity: 0.9;">
+                    You <strong>must</strong> join our Discord server. If you do not join the server, you will not be able to access the paid channels. Copy your token and join below.
+                </p>
+                <a href="https://discord.gg/D9QV3MS64" target="_blank" style="display: inline-block; background: #5865F2; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: 0.3s; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);">
+                    👉 Join Discord Server
+                </a>
+            </div>
+
+            <button onclick="location.reload()" style="margin-top: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color); box-shadow: none;">Return Home</button>
         </div>
+    </div>
 
     <script>
         const API_BASE = "/api";
