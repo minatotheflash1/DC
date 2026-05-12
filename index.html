@@ -223,17 +223,6 @@
             <button onclick="location.reload()" style="margin-top: 30px;">Return Home</button>
         </div>
 
-        <!-- ADMIN LOGIN -->
-        <div id="admin-login" class="section">
-            <h2>🔒 Admin Area</h2>
-            <div class="form-group"><input type="email" id="admin-email" placeholder="Email"></div>
-            <div class="form-group"><input type="password" id="admin-pass" placeholder="Password"></div>
-            <button onclick="adminLogin()">Login to Dashboard</button>
-            <p style="text-align:center; font-size:12px; margin-top:20px; cursor:pointer;" onclick="showSection('step-1')">⬅️ Cancel</p>
-        </div>
-
-    </div>
-
     <script>
         const API_BASE = "/api";
         let basePrice = 1000;
