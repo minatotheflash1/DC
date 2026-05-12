@@ -1,4 +1,8 @@
-discord.py
-python-dotenv
-asyncpg
-openai
+Flask==3.0.0
+flask-cors==4.0.0
+psycopg2-binary==2.9.9
+discord.py==2.3.2
+asyncpg==0.29.0
+openai==1.12.0
+python-dotenv==1.0.1
+gunicorn==21.2.0
