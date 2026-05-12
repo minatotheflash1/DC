@@ -179,8 +179,12 @@ async def add(ctx, user_input: str):
     if paid_role is None:
         return await ctx.send("❌ Error: PAID_ROLE_ID ঠিকমতো সেট করা নেই!")
 
-    # Check if user is already in the server
-    member = ctx.guild.get_member(user_id)
+    # Check if user is already in the server directly via API
+    member = None
+    try:
+        member = await ctx.guild.fetch_member(user_id)
+    except discord.NotFound:
+        member = None
 
     if member:
         # User is in server, assign role immediately
