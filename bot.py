@@ -497,4 +497,22 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CommandNotFound):
         pass
 
-bot.run(os.environ.get('DISCORD_TOKEN'))
+# ==========================================
+# 🌐 RUN FLASK WEBSITE & BOT TOGETHER
+# ==========================================
+from threading import Thread
+from app import app as flask_app
+
+def run_flask():
+    port = int(os.environ.get("PORT", 5000))
+    # ওয়েবসাইট রান হবে থ্রেডের মাধ্যমে
+    flask_app.run(host="0.0.0.0", port=port, use_reloader=False)
+
+if __name__ == "__main__":
+    # Flask কে ব্যাকগ্রাউন্ডে চালু করা হচ্ছে
+    flask_thread = Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+    
+    # Discord Bot কে মেইন থ্রেডে চালু করা হচ্ছে
+    bot.run(os.environ.get('DISCORD_TOKEN'))
